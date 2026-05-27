@@ -1,5 +1,25 @@
 // Versionsnummer
-const APP_VERSION = "v0.9.0";
+const APP_VERSION = "v1.0.0-firestore";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+// Din specifika konfiguration från Firebase Console:
+const firebaseConfig = {
+  apiKey: "AIzaSyBfxBBFA53g6VMcWk0c5FUUCvoJDCziA1Q",
+  authDomain: "utcheckning.firebaseapp.com",
+  projectId: "utcheckning",
+  storageBucket: "utcheckning.firebasestorage.app",
+  messagingSenderId: "332957602039",
+  appId: "1:332957602039:web:c979968cba83bde45983f2",
+  measurementId: "G-TBTH1WVHQE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
+const studentsCol = collection(db, "students");
 
 // Original hardcoded students array (will be used as default if localStorage is empty)
 const initialStudents = [
@@ -15,32 +35,31 @@ const initialStudents = [
     { id: 10, name: "Leo", avatar: "images/Leo.png", present: true, class: "1B" },
 ];
 
-// Load students from localStorage, or use initialStudents if not found
-// Detta säkerställer att tillagda/borttagna elever sparas mellan sessioner.
-let students = JSON.parse(localStorage.getItem('allStudents')) || initialStudents;
-
-// Spara initiala elever till localStorage om det var tomt (första körningen)
-if (localStorage.getItem('allStudents') === null) {
-    localStorage.setItem('allStudents', JSON.stringify(initialStudents));
-}
+// Global array för elever som hämtas från databasen
+let students = [];
 
 // Håller koll på vilken elev som just nu redigeras i admin-panelen
 let editingStudentId = null;
-
 let currentClass = "1A";
 
-// Hämta sparade statusar från webbläsaren
-const savedStates = JSON.parse(localStorage.getItem('student-presence')) || {};
-
-// Applicera sparad status på eleverna
-students.forEach(student => {
-    if (savedStates[student.id] !== undefined) {
-        student.present = savedStates[student.id];
-    }
-});
-
-// Sortera listan alfabetiskt efter namn (hanterar Å, Ä, Ö korrekt med 'sv')
-students.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+// Funktion för att hämta data från Firestore vid start
+async function initApp() {
+    try {
+        const querySnapshot = await getDocs(studentsCol);
+        if (querySnapshot.empty) {
+            // Om databasen är tom, ladda in initialStudents
+            for (const s of initialStudents) {
+                await setDoc(doc(db, "students", s.id.toString()), s);
+            }
+            students = [...initialStudents];
+        } else {
+            students = querySnapshot.docs.map(doc => doc.data());
+        }
+        students.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+        renderClassSelector();
+        renderStudents();
+    } catch (e) { console.error("Kunde inte ladda elever:", e); }
+}
 
 const grid = document.getElementById('student-grid');
 
@@ -283,15 +302,12 @@ function renderStudents() {
     });
 }
 
-function togglePresence(id) {
-    const student = students.find(s => s.id === id);
+window.togglePresence = async (id) => {
+    const student = students.find(s => s.id === Number(id));
     if (student) {
         student.present = !student.present;
         
-        // Spara den nya statusen i localStorage
-        const statesToSave = JSON.parse(localStorage.getItem('student-presence')) || {};
-        statesToSave[id] = student.present;
-        localStorage.setItem('student-presence', JSON.stringify(statesToSave));
+        await updateDoc(doc(db, "students", id.toString()), { present: student.present });
 
         console.log(`${student.name} status ändrad till: ${student.present ? 'Närvarande' : 'Utcheckad'}`);
         
@@ -306,11 +322,12 @@ function togglePresence(id) {
             renderClassSelector();
         }
     }
-}
+};
 
-// Funktion för att spara hela students-arrayen till localStorage
+// Denna funktion behövs inte längre med Firestore eftersom vi sparar per ändring, 
+// men vi behåller namnet för att inte bryta logiken om det anropas.
 function saveStudents() {
-    localStorage.setItem('allStudents', JSON.stringify(students));
+    console.log("Data synkad med Firestore.");
 }
 
 // Funktion för att rendera adminpanelen (modalen)
@@ -394,7 +411,7 @@ function renderAdminPanel() {
 }
 
 // Funktion för att stänga adminpanelen
-function closeAdminPanel() {
+window.closeAdminPanel = () => {
     document.getElementById('admin-modal').style.display = 'none';
 }
 
@@ -412,8 +429,9 @@ function addStudent(name, className) {
         present: true, // Nya elever är närvarande som standard
         class: className
     };
+    
+    setDoc(doc(db, "students", newId.toString()), newStudent);
     students.push(newStudent);
-    saveStudents(); // Spara den uppdaterade students-arrayen
     students.sort((a, b) => a.name.localeCompare(b.name, 'sv')); // Sortera om listan
     renderClassSelector();
     renderStudents();
@@ -428,7 +446,7 @@ window.setEditingStudent = (id) => {
 };
 
 // Spara ändringar för en specifik elev
-window.updateStudent = (id) => {
+window.updateStudent = async (id) => {
     const student = students.find(s => s.id === id);
     const newName = document.getElementById(`edit-name-${id}`).value.trim();
     const newClass = document.getElementById(`edit-class-${id}`).value.trim().toUpperCase();
@@ -439,8 +457,10 @@ window.updateStudent = (id) => {
     student.class = newClass;
     student.avatar = `images/${newName}.png`;
 
+    const studentRef = doc(db, "students", id.toString());
+    await updateDoc(studentRef, { name: newName, class: newClass, avatar: student.avatar });
+
     editingStudentId = null;
-    saveStudents();
     students.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
     renderClassSelector();
     renderStudents();
@@ -448,7 +468,7 @@ window.updateStudent = (id) => {
 };
 
 // Byt namn på en hel klass (t.ex. vid läsårsbyte)
-window.renameClassGroup = () => {
+window.renameClassGroup = async () => {
     const oldClass = prompt("Vilken klass vill du byta namn på? (t.ex. 1A)").trim().toUpperCase();
     if (!oldClass || !students.some(s => s.class === oldClass)) {
         alert("Hittade ingen klass med det namnet.");
@@ -458,11 +478,15 @@ window.renameClassGroup = () => {
     const newClass = prompt(`Vad ska klass ${oldClass} heta istället?`).trim().toUpperCase();
     if (!newClass) return;
     
+    const batch = writeBatch(db);
     students.forEach(s => {
-        if (s.class === oldClass) s.class = newClass;
+        if (s.class === oldClass) {
+            s.class = newClass;
+            batch.update(doc(db, "students", s.id.toString()), { class: newClass });
+        }
     });
     
-    saveStudents();
+    await batch.commit();
     renderClassSelector();
     renderStudents();
     renderAdminPanel();
@@ -489,13 +513,16 @@ window.importStudents = () => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
             try {
                 const importedData = JSON.parse(event.target.result);
                 if (Array.isArray(importedData)) {
                     if (confirm("Varning: Detta kommer att ersätta din nuvarande lista. Vill du fortsätta?")) {
+                        // Här borde man egentligen rensa Firestore först
+                        for (const s of importedData) {
+                            await setDoc(doc(db, "students", s.id.toString()), s);
+                        }
                         students = importedData;
-                        saveStudents();
                         students.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
                         renderClassSelector();
                         renderStudents();
@@ -514,21 +541,18 @@ window.importStudents = () => {
 };
 
 // Funktion för att ta bort en elev
-function removeStudent(id) {
+window.removeStudent = async (id) => {
     const studentToRemove = students.find(s => s.id === id);
     if (!studentToRemove) return;
     if (!confirm(`Är du säker på att du vill ta bort ${studentToRemove.name} (${studentToRemove.class})?`)) { return; }
+    
+    await deleteDoc(doc(db, "students", id.toString()));
     students = students.filter(s => s.id !== id);
-    saveStudents(); // Spara den uppdaterade students-arrayen
-    // Ta även bort elevens närvarostatus från localStorage
-    const savedStates = JSON.parse(localStorage.getItem('student-presence')) || {};
-    delete savedStates[id];
-    localStorage.setItem('student-presence', JSON.stringify(savedStates));
+    
     renderClassSelector();
     renderStudents();
     renderAdminPanel(); // Uppdatera adminpanelen
-}
+};
 
 // Starta appen
-renderClassSelector();
-renderStudents();
+initApp();

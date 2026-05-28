@@ -222,6 +222,23 @@ style.textContent = `
     .student-name { font-weight: bold; color: #333; font-size: 1.1rem; }
     .status-label { font-size: 0.85rem; color: #999; margin-top: 5px; }
 
+    /* Hamburger-meny för mobiler */
+    .menu-toggle {
+        display: none;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
     /* Responsiv design för tablets och mobiler */
     @media (max-width: 768px) {
         body { 
@@ -229,52 +246,21 @@ style.textContent = `
             overflow-y: auto; 
             height: auto; 
         }
+        .menu-toggle { display: block; }
         #class-sidebar { 
-            width: 100%; 
-            height: auto; 
-            border-right: none; 
-            border-bottom: 2px solid #eee; 
-            padding: 10px;
-            position: sticky;
+            position: fixed;
+            left: -240px;
             top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
+            width: 240px;
+            height: 100vh;
+            z-index: 1050;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            background: #f4f4f4;
             display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
         }
-        #class-sidebar h2, .version-info { display: none; }
-        
-        #class-sidebar > div { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            overflow-x: auto !important; 
-            gap: 8px; 
-            padding: 5px 0;
-            scrollbar-width: none;
-            flex-grow: 1;
-            margin-right: 10px;
-        }
-        #class-sidebar > div::-webkit-scrollbar { display: none; }
-        
-        .class-btn { 
-            width: auto; 
-            margin-bottom: 0; 
-            white-space: nowrap; 
-            flex-shrink: 0; 
-            padding: 8px 12px; 
-            font-size: 0.85rem; 
-        }
-        
-        .admin-btn { 
-            width: auto; 
-            margin: 0; 
-            padding: 8px 12px; 
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
+        #class-sidebar.open { left: 0; }
         
         #main-wrapper { height: auto; overflow: visible; }
         #student-grid { padding: 15px 10px; }
@@ -298,6 +284,12 @@ document.head.appendChild(style);
 // Organisera om DOM-strukturen för korrekt layout
 const sidebar = document.createElement('nav');
 sidebar.id = 'class-sidebar';
+
+const menuToggle = document.createElement('button');
+menuToggle.className = 'menu-toggle';
+menuToggle.innerHTML = '☰';
+menuToggle.onclick = () => sidebar.classList.toggle('open');
+document.body.appendChild(menuToggle);
 
 const mainWrapper = document.createElement('div');
 mainWrapper.id = 'main-wrapper';
@@ -340,6 +332,7 @@ window.switchClass = (cls) => {
     currentClass = cls;
     renderClassSelector();
     renderStudents();
+    sidebar.classList.remove('open');
 };
 
 function renderStudents() {

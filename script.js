@@ -223,39 +223,74 @@ style.textContent = `
     .status-label { font-size: 0.85rem; color: #999; margin-top: 5px; }
 
     /* Responsiv design för tablets och mobiler */
-    @media (max-width: 850px) {
-        body { flex-direction: column; overflow-y: auto; height: auto; }
+    @media (max-width: 768px) {
+        body { 
+            flex-direction: column; 
+            overflow-y: auto; 
+            height: auto; 
+        }
         #class-sidebar { 
             width: 100%; 
             height: auto; 
             border-right: none; 
-            border-bottom: 1px solid #ddd; 
-            padding: 15px;
+            border-bottom: 2px solid #eee; 
+            padding: 10px;
             position: sticky;
             top: 0;
             z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
         }
-        #class-sidebar h2 { font-size: 1.2rem; margin-bottom: 10px !important; }
+        #class-sidebar h2, .version-info { display: none; }
         
-        /* Gör klasslistan horisontellt rullbar på mobilen */
         #class-sidebar > div { 
-            display: flex; 
+            display: flex !important; 
             flex-direction: row !important; 
             overflow-x: auto !important; 
             gap: 8px; 
-            padding-bottom: 5px;
-            -webkit-overflow-scrolling: touch;
+            padding: 5px 0;
+            scrollbar-width: none;
+            flex-grow: 1;
+            margin-right: 10px;
         }
-        .class-btn { width: auto; margin-bottom: 0; white-space: nowrap; flex-shrink: 0; }
+        #class-sidebar > div::-webkit-scrollbar { display: none; }
+        
+        .class-btn { 
+            width: auto; 
+            margin-bottom: 0; 
+            white-space: nowrap; 
+            flex-shrink: 0; 
+            padding: 8px 12px; 
+            font-size: 0.85rem; 
+        }
+        
+        .admin-btn { 
+            width: auto; 
+            margin: 0; 
+            padding: 8px 12px; 
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
         
         #main-wrapper { height: auto; overflow: visible; }
-        #student-grid { padding: 20px 10px; }
-        header { padding: 20px 10px 0; }
-        header h1 { font-size: 1.5rem; }
-        .admin-btn { width: 100%; margin-top: 10px; padding: 10px; }
-        .version-info { display: none; }
-        .student-card { width: 110px; padding: 10px; }
-        .avatar { width: 70px; height: 70px; }
+        #student-grid { padding: 15px 10px; }
+        header { padding: 15px 10px 0; }
+        header h1 { font-size: 1.4rem; }
+        header p { font-size: 0.9rem; }
+        
+        .student-list { 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 12px; 
+        }
+        .student-card { padding: 10px; border-radius: 15px; }
+        .avatar { width: 65px; height: 65px; }
+        .student-name { font-size: 0.9rem; }
+        .group-header { font-size: 1.3rem; margin-bottom: 15px; }
+        .status-group { margin-bottom: 30px; }
     }
 `;
 document.head.appendChild(style);

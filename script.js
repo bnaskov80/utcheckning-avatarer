@@ -236,7 +236,7 @@ style.textContent = `
         padding: 10px 15px;
         font-size: 1.2rem;
         cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     /* Mörk bakgrund när menyn är öppen */
@@ -247,20 +247,20 @@ style.textContent = `
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.6);
         z-index: 1040;
     }
 
     /* Responsiv design för tablets och mobiler */
-    @media (max-width: 768px) {
+    @media (max-width: 850px) {
         body { 
-            flex-direction: column; 
+            flex-direction: column !important; 
             overflow-y: auto; 
             height: auto; 
         }
-        .menu-toggle { display: block; }
+        .menu-toggle { display: block !important; }
         #class-sidebar { 
-            position: fixed;
+            position: fixed !important;
             left: -240px;
             top: 0;
             width: 240px;
@@ -272,7 +272,7 @@ style.textContent = `
             display: flex;
             flex-direction: column;
         }
-        #menu-overlay.active { display: block; }
+        #menu-overlay.active { display: block !important; }
         #class-sidebar.open { left: 0; }
         
         #main-wrapper { height: auto; overflow: visible; }
@@ -314,7 +314,7 @@ function toggleMenu() {
     overlay.classList.toggle('active');
     menuToggle.innerHTML = isOpen ? '✕' : '☰';
     // Hindra scroll på bodyn när menyn är öppen
-    document.body.style.overflow = (isOpen && window.innerWidth <= 768) ? 'hidden' : '';
+    document.body.style.overflow = (isOpen) ? 'hidden' : '';
 }
 
 const mainWrapper = document.createElement('div');

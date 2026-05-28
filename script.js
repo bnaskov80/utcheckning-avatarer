@@ -215,6 +215,42 @@ style.textContent = `
     .avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     .student-name { font-weight: bold; color: #333; font-size: 1.1rem; }
     .status-label { font-size: 0.85rem; color: #999; margin-top: 5px; }
+
+    /* Responsiv design för tablets och mobiler */
+    @media (max-width: 850px) {
+        body { flex-direction: column; overflow-y: auto; height: auto; }
+        #class-sidebar { 
+            width: 100%; 
+            height: auto; 
+            border-right: none; 
+            border-bottom: 1px solid #ddd; 
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        #class-sidebar h2 { font-size: 1.2rem; margin-bottom: 10px !important; }
+        
+        /* Gör klasslistan horisontellt rullbar på mobilen */
+        #class-sidebar > div { 
+            display: flex; 
+            flex-direction: row !important; 
+            overflow-x: auto !important; 
+            gap: 8px; 
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .class-btn { width: auto; margin-bottom: 0; white-space: nowrap; flex-shrink: 0; }
+        
+        #main-wrapper { height: auto; overflow: visible; }
+        #student-grid { padding: 20px 10px; }
+        header { padding: 20px 10px 0; }
+        header h1 { font-size: 1.5rem; }
+        .admin-btn { width: 100%; margin-top: 10px; padding: 10px; }
+        .version-info { display: none; }
+        .student-card { width: 110px; padding: 10px; }
+        .avatar { width: 70px; height: 70px; }
+    }
 `;
 document.head.appendChild(style);
 

@@ -75,10 +75,10 @@ style.textContent = `
     .class-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; text-align: left; font-weight: bold; transition: all 0.2s; }
     .class-btn:hover { background: #f0f0f0; }
     .class-btn.active { background: #007bff; color: white; border-color: #0056b3; }
-    .admin-btn { margin-top: auto; margin-bottom: 10px; padding: 15px; border: none; border-radius: 8px; background: #333; color: white; cursor: pointer; font-weight: bold; text-align: center; transition: background 0.2s; }
+    .admin-btn { margin-top: auto; margin-bottom: 10px; padding: 15px; border: none; border-radius: 8px; background: #333; color: white; cursor: pointer; font-weight: bold; text-align: center; transition: background 0.2s; flex-shrink: 0; }
     .admin-btn:hover { background: #000; }
     .version-info { text-align: center; font-size: 0.75rem; color: #aaa; margin-bottom: 15px; }
-    .status-group { margin-bottom: 50px; }
+    .status-group { flex: 1; min-width: 0; margin-bottom: 50px; }
     /* Admin Modal Styles */
     .admin-modal-overlay {
         position: fixed;
@@ -289,7 +289,8 @@ style.textContent = `
         .avatar { width: 65px; height: 65px; }
         .student-name { font-size: 0.9rem; }
         .group-header { font-size: 1.3rem; margin-bottom: 15px; }
-        .status-group { margin-bottom: 30px; }
+        .status-group { margin-bottom: 30px; width: 100%; }
+        .grid-container { flex-direction: column; }
     }
 `;
 document.head.appendChild(style);
@@ -329,8 +330,8 @@ mainWrapper.appendChild(grid);
 function renderClassSelector() {
     const classes = [...new Set(students.map(s => s.class))].sort();
     sidebar.innerHTML = `
-        <h2 style="margin-top: 0; text-align: center;">Klasser</h2>
-        <div style="flex-grow: 1; overflow: hidden;">
+        <h2 style="margin-top: 0; text-align: center; flex-shrink: 0;">Klasser</h2>
+        <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
             ${classes.map(cls => {
                 const count = students.filter(s => s.class === cls && s.present).length;
                 return `

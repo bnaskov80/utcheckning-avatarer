@@ -201,11 +201,17 @@ style.textContent = `
     .export-btn:hover { background: #5a6268 !important; }
     .import-btn { background: #17a2b8 !important; color: white !important; }
     .import-btn:hover { background: #138496 !important; }
+
     /* Elevkort och avatarer */
-    .student-list { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+    .student-list { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+        gap: 20px; 
+        justify-items: center;
+    }
     .student-card { 
         background: white; border: 1px solid #eee; border-radius: 20px; padding: 15px; 
-        width: 130px; display: flex; flex-direction: column; align-items: center; 
+        width: 100%; max-width: 140px; display: flex; flex-direction: column; align-items: center; 
         cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.08);
         outline: none; /* Tar bort den blå runda ringen som visas vid klick */
     }

@@ -239,6 +239,18 @@ style.textContent = `
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
+    /* Mörk bakgrund när menyn är öppen */
+    #menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+    }
+
     /* Responsiv design för tablets och mobiler */
     @media (max-width: 768px) {
         body { 
@@ -260,6 +272,7 @@ style.textContent = `
             display: flex;
             flex-direction: column;
         }
+        #menu-overlay.active { display: block; }
         #class-sidebar.open { left: 0; }
         
         #main-wrapper { height: auto; overflow: visible; }
@@ -285,11 +298,24 @@ document.head.appendChild(style);
 const sidebar = document.createElement('nav');
 sidebar.id = 'class-sidebar';
 
+const overlay = document.createElement('div');
+overlay.id = 'menu-overlay';
+overlay.onclick = () => toggleMenu();
+document.body.appendChild(overlay);
+
 const menuToggle = document.createElement('button');
 menuToggle.className = 'menu-toggle';
 menuToggle.innerHTML = '☰';
-menuToggle.onclick = () => sidebar.classList.toggle('open');
+menuToggle.onclick = () => toggleMenu();
 document.body.appendChild(menuToggle);
+
+function toggleMenu() {
+    const isOpen = sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    menuToggle.innerHTML = isOpen ? '✕' : '☰';
+    // Hindra scroll på bodyn när menyn är öppen
+    document.body.style.overflow = (isOpen && window.innerWidth <= 768) ? 'hidden' : '';
+}
 
 const mainWrapper = document.createElement('div');
 mainWrapper.id = 'main-wrapper';
@@ -332,7 +358,7 @@ window.switchClass = (cls) => {
     currentClass = cls;
     renderClassSelector();
     renderStudents();
-    sidebar.classList.remove('open');
+    if (sidebar.classList.contains('open')) toggleMenu();
 };
 
 function renderStudents() {
